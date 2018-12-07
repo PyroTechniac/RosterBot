@@ -41,7 +41,7 @@ module.exports = class GetMember extends Command {
       let joinedString = await `${joinedDate.getMonth() + 1}/${joinedDate.getDate()}/${joinedDate.getFullYear()}`
       await embed.addField("Joined At", joinedString, true)
       
-      await message.say("Member not found, here's what I know: ")
+      await message.say("Member not found **on the roster**, here's what I know: ")
       return message.embed(embed)
     } else {
       const amember = await message.guild.member(member)
