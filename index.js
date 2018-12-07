@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 
 
-const { CommandoClient, SQLiteProvider } = require('discord.js-commando');
+const { CommandoClient, SQLiteProvider, FriendlyError } = require('discord.js-commando');
 const path = require('path');
 const sqlite = require('sqlite');
 const Sequelize = require('sequelize');
@@ -13,10 +13,21 @@ const client = new CommandoClient({
     owner: config.owners,
     disableEveryone: true,
     invite: 'https://discord.gg/fwK2657',
-    unknownCommandResponse: false
+    unknownCommandResponse: false,
 });
-
-
+const testOne = async (err, channel, args, command) => {
+  if (err.name == "TypeError") {
+    const member = args[Object.keys(args)[0]]
+    const check = Roster.findOne({ where: { discordID: member.id } })
+    if (check.discordID == undefined) {
+      channel.send(`${member.tag} does not exist on the roster`)
+    } else {
+      channel.send("An error has occured, I have let Pyro know")
+  }
+} else {
+  channel.send("An error has occured, I have let Pyro know")
+}
+}
 
 
 const rosterBase = new Sequelize('database', 'user', 'password', {
@@ -117,9 +128,14 @@ client.on("ready", () => {
     Roster.sync();
 })
 
-client.on("error", err => {
-  console.log(err)
+client.on("commandError", (command, err, message, args, fromPattern) => {
+  client.channels.get("520253705002418176").send(`${err.name}: ${err.message}`)
+  err.catch(testOne(err, message.channel, args, command))
 })
+client.on("error", err => {
+  client.channels.get("520253705002418176").send(`${err.name}: ${err.message}`)
+})
+  
 client.login(process.env.TOKEN);
 
 
