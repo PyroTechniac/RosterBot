@@ -77,7 +77,7 @@ module.exports = class Edit extends Command {
     if (field.toLowerCase() == 'clan') {
       if (rosterMember.isFlermling == true) return message.say(`${member.tag} is a flermling`)
       await Roster.update({ clanInvitedTo: newValue.toLowerCase() }, { where: { discordID: member.id } })
-      await embed.addField("Clan Invited To", `:regional_indicator_${newValue}`)
+      await embed.addField("Clan Invited To", `:regional_indicator_${newValue.toLowerCase()}:`)
     }
     
     await message.say("Member Modified: ")
