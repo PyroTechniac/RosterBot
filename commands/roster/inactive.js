@@ -17,12 +17,6 @@ module.exports = class Inactive extends Command {
           type: "user",
         },
         {
-          key: "lastPost",
-          prompt: `Enter the date of their last post (FORMAT: MM/dd; EXAMPLE: ${Date.monthIndex + 1}/${Date.getDate}`,
-          type: "string",
-          default: ""
-        },
-        {
           key: "dmedBy",
           prompt: "Enter who DMed them",
           type: 'user',
@@ -31,7 +25,7 @@ module.exports = class Inactive extends Command {
         ]
     })
   }
-  async run(message, { member, lastPost, dmedBy }) {
+  async run(message, { member, dmedBy }) {
       const NowDate = await new Date()
       let rosterMember = await Roster.findOne({ where: { discordID: member.id } })
       const newValue = await !rosterMember.inactive
@@ -51,13 +45,15 @@ module.exports = class Inactive extends Command {
         return message.embed(embed)
       } else {
         await Roster.update({ inactive: true }, { where: { discordID: member.id } })
-        if (lastPost == '') {
-          const d = await new Date()
-          const dateText = await `${d.getMonth() + 1}/${d.getDate()}`
-          await Roster.update({ lastPost: dateText }, { where: { discordID: member.id } })
+        let lastPostDate = await ""
+        let lastPostMessage = await ""
+        if (message.guild.member(member).lastMessage == null) {
+          lastPostMessage = await "No messages found"
         } else {
-          await Roster.update({ lastPost: lastPost }, { where: { discordID: member.id } })
+          lastPostDate = await message.guild.member(member).lastMessage.createdAt
+          lastPostMessage = await `${lastPostDate.getMonth() + 1}/${lastPostDate.getDate()}` || "No message found"
         }
+        await Roster.update({ lastPost: lastPostMessage }, { where: { discordID: member.id } })
         if (dmedBy == '') {
           await Roster.update({ dmedBy: message.author.tag }, { where: { discordID: member.id } })
         } else {
